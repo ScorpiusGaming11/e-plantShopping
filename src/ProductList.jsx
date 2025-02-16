@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addItem } from './CartSlice';
 import './ProductList.css'
 import CartItem from './CartItem';
@@ -7,7 +7,25 @@ function ProductList() {
     const [showCart, setShowCart] = useState(false); 
     const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
     const [addedToCart, setAddedToCart] = useState({});
+    const [cartCount, setCartCount] = useState(0);
     const dispatch = useDispatch();
+    const cart = useSelector(state => state.cart.items);
+
+    const handleCartCount = (itemAction, item = null) => {
+        if (itemAction === 'add-to-cart') {
+            setCartCount(cartCount + 1);
+        } else if (itemAction === 'increment') {
+            setCartCount(cartCount + 1);
+        } else if (itemAction === 'decrement') {
+            setCartCount(cartCount - 1);
+        } else if (itemAction === 'remove') {
+            cart.forEach((cartItem) => {
+                if (cartItem.name === item.name) {
+                    setCartCount(cartCount - cartItem.quantity);
+                }
+            })
+        }
+    }
 
     const handleAddToCart = (product) => {
         dispatch(addItem(product));
@@ -15,6 +33,7 @@ function ProductList() {
             ...prevState,
             [product.name]: true, // Set the product name as key and value as true to indicate it's added to cart
         }));
+        handleCartCount('add-to-cart');
     }
 
     const plantsArray = [
@@ -244,6 +263,23 @@ function ProductList() {
     fontSize: '30px',
     textDecoration: 'none',
    }
+   const styleB={
+    position: 'relative', 
+    width: '68px', 
+    height: '68px',
+   }
+   const styleC={
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)', // Center the number
+    color: 'white',
+    borderRadius: '50%', // Make it a circle
+    padding: '4px 8px', // Adjust padding as needed
+    fontSize: '14px', // Adjust font size
+    minWidth: '20px', // Ensure a minimum width for single digits
+    textAlign: 'center',
+   }
     const handleCartClick = (e) => {
         e.preventDefault();
         setShowCart(true); // Set showCart to true when cart icon is clicked
@@ -277,7 +313,12 @@ function ProductList() {
                         <a href="#" onClick={(e)=>handlePlantsClick(e)} style={styleA}>Plants</a>
                     </div>
                     <div>
-                        <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}><h1 className='cart'><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path></svg></h1></a>
+                        <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
+                            <div className='cart' style={styleB}>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68"><rect width="156" height="156" fill="none"></rect><circle cx="80" cy="216" r="12"></circle><circle cx="184" cy="216" r="12"></circle><path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path></svg>
+                                <span className="cart-count" style={styleC}>{cartCount}</span>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -301,7 +342,7 @@ function ProductList() {
                     ))}
                 </div>
             ) :  (
-                <CartItem onContinueShopping={handleContinueShopping}/>
+                <CartItem onContinueShopping={handleContinueShopping} handleCartCount={handleCartCount}/>
             )}
         </div>
     );
